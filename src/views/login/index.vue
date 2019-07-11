@@ -12,7 +12,7 @@
           />
 
           <van-field
-            v-model="user.password"
+            v-model="user.code"
             type="password"
             label="密码"
             placeholder="请输入密码"
@@ -46,15 +46,19 @@ export default {
   methods: {
     async handleLogin () {
       try {
-        const res = await login(this.user)
-        console.log(res)
+        const data = await login(this.user)
+        console.log(data)
+        this.$store.commit('setUser', data)
+        // 跳转首页
+        this.$router.push({
+          name: 'home'
+        })
       } catch (err) {
         console.log(err)
         console.log('登录失败')
       }
     }
-  },
-  components: {}
+  }
 }
 </script>
 
