@@ -57,16 +57,21 @@
 </template>
 
 <script>
+import { getUserChannels } from '@/api/channel'
 export default {
   nname: 'HomeIndex',
   data () {
     return {
+      channels: [],
       activeChannelIndex: 0,
       list: [],
       loading: false,
       finished: false,
       pullRefreshLoading: false
     }
+  },
+  created () {
+    this.loadChannels()
   },
   methods: {
     onLoad () {
@@ -89,6 +94,19 @@ export default {
       setTimeout(() => {
         this.pullRefreshLoading = false
       }, 3000)
+    },
+    async loadChannels () {
+      try {
+        const localChannels = window.localStorage.getItem('channels')
+        // 如果有本地存储的频道列表，则使用本地的
+        if (localChannels) {
+          this.channels = localChannels
+        } else {
+          this.channels = (await getUserChannels()).channels
+        }
+      } catch (err) {
+
+      }
     }
   }
 }
