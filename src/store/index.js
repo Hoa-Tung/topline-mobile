@@ -8,8 +8,8 @@ export default new Vuex.Store({
   },
   mutations: {
     setUser (state, user) {
-      // state.user = user
-      state.localStorage.setItem('user', JSON.stringify(state.user))
+      state.user = user
+      window.localStorage.setItem('user', JSON.stringify(state.user))
     }
   },
   actions: {
