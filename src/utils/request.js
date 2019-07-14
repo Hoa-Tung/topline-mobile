@@ -11,6 +11,7 @@ import store from '@/store'
  */
 const request = axios.create({
   baseURL: 'http://ttapi.research.itcast.cn/'
+  // baseURL: 'http://toutiao.course.itcast.cn' // 本地接口地址
 })
 // Add a request interceptor
 request.interceptors.request.use(function (config) {

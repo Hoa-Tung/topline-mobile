@@ -6,7 +6,10 @@
 
     <!-- 频道标签 -->
     <van-tabs class="channel-tabs" v-model="activeChannelIndex">
-      <van-tab title="标签 1">
+      <van-tab v-for="channelItem in channels"
+        :key="channelItem.id"
+        :title="channelItem.name"
+      >
         <!--
           下拉刷新组件
           isLoading 控制下拉的 loading 状态
@@ -35,13 +38,7 @@
           </van-list>
         </van-pull-refresh>
       </van-tab>
-      <van-tab title="标签 2">内容 2</van-tab>
-      <van-tab title="标签 3">内容 3</van-tab>
-      <van-tab title="标签 4">内容 4</van-tab>
-      <van-tab title="标签 5">内容 5</van-tab>
-      <van-tab title="标签 6">内容 6</van-tab>
-      <van-tab title="标签 7">内容 7</van-tab>
-      <van-tab title="标签 8">内容 8</van-tab>
+
     </van-tabs>
     <!-- /频道标签 -->
 
@@ -59,7 +56,7 @@
 <script>
 import { getUserChannels } from '@/api/channel'
 export default {
-  nname: 'HomeIndex',
+  name: 'HomeIndex',
   data () {
     return {
       channels: [],
@@ -98,12 +95,19 @@ export default {
     async loadChannels () {
       try {
         const localChannels = window.localStorage.getItem('channels')
-        // 如果有本地存储的频道列表，则使用本地的
+
+        // 如果有本地存储的频道列表 则使用本地的
         if (localChannels) {
           this.channels = localChannels
         } else {
           this.channels = (await getUserChannels()).channels
         }
+        // 不强制登陆 未登录用户返回后台设置的默认频道列表
+        const data = await getUserChannels()
+        // 将数据展示到页面
+
+        // 将数据保存到本地存储
+        console.log(data)
       } catch (err) {
 
       }
