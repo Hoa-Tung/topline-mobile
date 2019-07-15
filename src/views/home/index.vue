@@ -79,6 +79,7 @@ export default {
     }
   },
   async created () {
+    console.log('组件重新 created渲染了')
     // 加载频道列表
     await this.loadChannels()
     // 初始加载第一项频道数据列表
