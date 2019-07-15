@@ -15,15 +15,20 @@
           isLoading 控制下拉的 loading 状态
           refresh 下拉之后触发的事件
          -->
-        <van-pull-refresh v-model="pullRefreshLoading" @refresh="onRefresh">
+        <van-pull-refresh
+          v-model="channelItem.pullRefreshLoading"
+          @refresh="onRefresh"
+          :success-text="channelItem.pullSuccessText"
+          :success-duration="1000"
+        >
           <!--
             loading 控制加载更多的 loading 状态
             finished 控制是否已加载结束
             onLoad 事件会在滚动到底部区域的时候自动调用，每次 onLoad 它会自动让 loading 为 true
           -->
           <van-list
-            v-model="loading"
-            :finished="finished"
+            v-model="channelItem.upLoading"
+            :finished="channelItem.finished"
             finished-text="没有更多了"
             @load="onLoad"
           >
@@ -31,14 +36,13 @@
               列表中的内容
             -->
             <van-cell
-              v-for="item in list"
-              :key="item"
-              :title="item"
+              v-for="item in channelItem.articles"
+              :key="item.art_id"
+              :title="item.title"
             />
           </van-list>
         </van-pull-refresh>
       </van-tab>
-
     </van-tabs>
     <!-- /频道标签 -->
 
@@ -55,6 +59,7 @@
 
 <script>
 import { getUserChannels } from '@/api/channel'
+import { getArticles } from '@/api/article'
 export default {
   name: 'HomeIndex',
   data () {
@@ -64,52 +69,106 @@ export default {
       list: [],
       loading: false,
       finished: false,
-      pullRefreshLoading: false
+      pullRefreshLoading: false,
+      channelItem: {}
     }
   },
-  created () {
-    this.loadChannels()
+  computed: {
+    activeChannel () {
+      return this.channels[this.activeChannelIndex]
+    }
+  },
+  async created () {
+    // 加载频道列表
+    await this.loadChannels()
+    // 初始加载第一项频道数据列表
+    // 注意：务必在记载频道之后
+    // this.loadArticoles()
   },
   methods: {
-    onLoad () {
-      console.log('onLoad')
-      // 异步更新数据
-      setTimeout(() => {
-        for (let i = 0; i < 10; i++) {
-          this.list.push(this.list.length + 1)
-        }
-        // 加载状态结束
-        this.loading = false
-        // 数据全部加载完成
-        if (this.list.length >= 40) {
-          // 所有数据加载完毕，设置 finished 为 true
-          this.finished = true
-        }
-      }, 1000)
+    async onLoad () {
+      await this.$sleep(800)
+      const articles = await this.loadArticles()
+      // 将请求得到的数据放入亲到文章列表中
+      this.activeChannel.articles.push(...articles)
+      // 数据加载好以后 让loading结束
+      this.activeChannel.upLoading = false
     },
-    onRefresh () {
-      setTimeout(() => {
-        this.pullRefreshLoading = false
-      }, 3000)
+    async onRefresh () {
+      // 获取最新数据
+      const data = await getArticles({
+        channelId: this.activeChannel.id,
+        timestamp: Date.now(),
+        withTop: 1
+      })
+      // 如果有最新数据
+      if (data.results.length) {
+        // 将最新数据重置到当前频道
+        this.activeChannel.articles = data.results
+        this.activeChannel.timestamp = data.pre_timestamp
+        this.activeChannel.pullSuccessText = '更新完成'
+        // 因为最新数据无法撑满一页，所以使用加载更多再请求一次
+        this.onLoad()
+      }
+      this.activeChannel.pullSuccessText = '暂无数据更新'
+      // 无论如何，最后都关闭加载状态
+      this.activeChannel.pullRefreshLoading = false
     },
     async loadChannels () {
       try {
+        let channels = []
         const localChannels = window.localStorage.getItem('channels')
-
         // 如果有本地存储的频道列表 则使用本地的
         if (localChannels) {
-          this.channels = localChannels
+          channels = localChannels
         } else {
-          this.channels = (await getUserChannels()).channels
+          channels = (await getUserChannels()).channels
         }
-        // 不强制登陆 未登录用户返回后台设置的默认频道列表
-        const data = await getUserChannels()
-        // 将数据展示到页面
 
-        // 将数据保存到本地存储
-        console.log(data)
+        // 对频道中的数据统一处理以供页面使用
+        channels.forEach(item => {
+          item.articles = [] // 频道的文章
+          item.timestamp = Date.now() // 用于下一页频道数据的时间戳
+          item.finished = false // 控制该频道上拉加载是否已加载完毕
+          item.upLoading = false // 控制该频道的下拉刷新 loading
+          item.pullRefreshLoading = false // 控制频道列表的下拉刷新状态
+          item.pullSuccessText = '' // 控制频道列表的下拉刷新成功提示文字
+        })
+
+        this.channels = channels
+        // // 不强制登陆 未登录用户返回后台设置的默认频道列表
+        // const data = await getUserChannels()
+        // // 将数据展示到页面
+
+        // // 将数据保存到本地存储
+        // console.log(data)
       } catch (err) {
+        console.log(err)
+      }
+    },
 
+    async loadArticles () {
+      // 频道、时间戳
+      const { id: channelId, timestamp } = this.activeChannel
+      console.log(this.activeChannel)
+      try {
+        const data = await getArticles({
+          channelId,
+          timestamp,
+          withTop: 1
+        })
+        // 如果没有最新数据 则请求上一次的数据
+        if (data.pre_timestamp && data.results.length === 0) {
+          this.activeChannel.timestamp = data.pre_timestamp
+          return this.loadArticles()
+        }
+        if (data.results.length) {
+          this.activeChannel.timestamp = data.pre_timestamp
+          return data.results
+        }
+        this.channelItem = data
+      } catch (err) {
+        console.log(err)
       }
     }
   }
