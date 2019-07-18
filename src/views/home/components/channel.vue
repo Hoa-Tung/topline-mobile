@@ -29,10 +29,10 @@
       </div>
       <van-grid class="channel-content" :gutter="10" clickable>
         <van-grid-item
-          v-for="value in 8"
-          :key="value"
+          v-for = "(item, index) in userChannels"
+          :key="item.id"
           text="文字">
-          <span class="text">文字</span>
+          <span class="text" :class="{ active: index === activeIndex }">{{ item.name }}</span>
           <van-icon class="close-icon" name="close" />
         </van-grid-item>
       </van-grid>
@@ -69,6 +69,14 @@ export default {
     value: {
       type: Boolean,
       default: false
+    },
+    userChannels: {
+      type: Array,
+      default: () => []
+    },
+    activeIndex: {
+      type: Number,
+      default: 0
     }
   },
   data () {
