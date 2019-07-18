@@ -1,6 +1,7 @@
 <template>
    <van-popup
-    v-model="show"
+    :value="value"
+    @input="$emit('input',$event)"
     position="bottom"
     :style="{ height: '95%' }"
   />
@@ -9,13 +10,23 @@
 <script>
 export default {
   name: 'HomeChannel',
-  props: {},
+  props: {
+    value: {
+      type: Boolean,
+      default: false
+    }
+  },
   data () {
     return {
       show: true
     }
   },
-  components: {}
+  methods: {
+    // handleInput (e) {
+    //   console.log('handleInput => s',e)
+    //   this.$emit('input',e)
+    // }
+  }
 }
 </script>
 
