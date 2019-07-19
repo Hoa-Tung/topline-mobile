@@ -49,11 +49,11 @@
       </div>
       <van-grid class="channel-content" :gutter="10" clickable>
         <van-grid-item
-          v-for="value in 8"
-          :key="value"
+          v-for="item in recommendChannels"
+          :key="item.id"
           text="文字">
           <div class="info">
-            <span class="text">文字</span>
+            <span class="text">{{ item.name }}</span>
           </div>
         </van-grid-item>
       </van-grid>
@@ -63,6 +63,8 @@
 </template>
 
 <script>
+import { getAllChannels } from '@/api/channel'
+
 export default {
   name: 'HomeChannel',
   props: {
@@ -81,14 +83,28 @@ export default {
   },
   data () {
     return {
-      show: true
+      allChannels: []
     }
   },
+  computed: {
+    // 该计算属性用于处理获取推荐数据（也就是不包含用户频道列表的其他所有频道列表）
+    recommendChannels () {
+      const duplicates = this.userChannels.map(item => item.id)
+      return this.allChannels.filter(item => !duplicates.includes(item.id))
+    }
+  },
+  created () {
+    this.loadAllChannels()
+  },
   methods: {
-    // handleInput (e) {
-    //   console.log('handleInput => s',e)
-    //   this.$emit('input',e)
-    // }
+    async loadAllChannels () {
+      try {
+        const data = await getAllChannels()
+        this.allChannels = data.channels
+      } catch (err) {
+        console.log(err)
+      }
+    }
   }
 }
 </script>
