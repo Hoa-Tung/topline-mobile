@@ -69,7 +69,7 @@
     <home-channel
       v-model="isChannelShow"
       :user-channels.sync = "channels"
-      :active-index = "activeChannelIndex"
+      :active-index.sync = "activeChannelIndex"
     ></home-channel>
     <!-- /频道组件 -->
   </div>
