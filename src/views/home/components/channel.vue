@@ -66,7 +66,7 @@
 </template>
 
 <script>
-import { getAllChannels } from '@/api/channel'
+import { getAllChannels, deleteUserChannel } from '@/api/channel'
 
 export default {
   name: 'HomeChannel',
@@ -141,7 +141,7 @@ export default {
         window.localStorage.setItem('channels', JSON.stringify(channels))
       }
     },
-    handleUserChannelClick (item, index) {
+    async handleUserChannelClick (item, index) {
       // 如果是非编辑状态，则是切换tab显示
       if (!this.isEdit) {
         this.$emit('update:active-index', index)
@@ -154,6 +154,7 @@ export default {
       this.$emit('update:user-channels', channels)
       const { user } = this.$store.state
       if (user) {
+        await deleteUserChannel(item.id)
         return
       }
       // 如果用户没有登录，则请求删除
