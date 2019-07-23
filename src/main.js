@@ -8,10 +8,14 @@ import relativeTime from './filters/relative-time'
 
 import 'amfe-flexible'
 
-import Vant from 'vant'
+// import Vant from 'vant'
+// import { Lazyload } from 'vant'
+import Vant, { Lazyload } from 'vant'
 import 'vant/lib/index.css'
-// import { reject } from 'q'
 
+// import { reject } from 'q'
+// 注册vant的图片懒加载指令
+Vue.use(Lazyload)
 // 注册一个全局过滤器：处理相对时间
 Vue.filter('relativeTime', relativeTime)
 

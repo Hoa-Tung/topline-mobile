@@ -43,6 +43,16 @@
               :key="item.art_id"
               :title="item.title"
             >
+            <!-- 图片宫格组件 -->
+            <div slot="label">
+              <template v-if="item.cover.type">
+                <van-grid :border="false" :column-num="3">
+                  <van-grid-item v-for="(img, index) in item.cover.images" :key="index">
+                    <van-image :src="img" lazy-load/>
+                  </van-grid-item>
+                </van-grid>
+              </template>
+            </div>
               <p slot="label">
                 <span>{{ item.aut_name }}</span>
                 &nbsp;
